@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jungian Archetype Sprites</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0d1117;
+    color: #e6edf3;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    padding: 2rem;
+  }
+  h1 {
+    text-align: center;
+    font-size: 1.9rem;
+    margin-bottom: 0.3rem;
+    background: linear-gradient(135deg, #c084fc, #818cf8, #60a5fa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle {
+    text-align: center;
+    color: #8b949e;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+  }
+
+  /* Rarity legend */
+  .rarity-legend {
+    display: flex;
+    justify-content: center;
+    gap: 1.2rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .rarity-legend .rarity-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: #8b949e;
+  }
+  .rarity-legend .rarity-pip {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .rarity-common { background: #8b949e; }
+  .rarity-uncommon { background: #3fb950; }
+  .rarity-rare { background: #58a6ff; }
+  .rarity-epic { background: #bc8cff; }
+  .rarity-legendary { background: linear-gradient(135deg, #f0c040, #f09030); }
+
+  .controls {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .controls label { color: #8b949e; font-size: 0.9rem; }
+  .controls select {
+    background: #161b22;
+    color: #e6edf3;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 0.4rem 0.7rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+  .speed-control {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .speed-control input[type="range"] {
+    width: 120px;
+    accent-color: #818cf8;
+  }
+
+  .filter-controls {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    background: #161b22;
+    color: #8b949e;
+    border: 1px solid #30363d;
+    border-radius: 20px;
+    padding: 0.35rem 0.9rem;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-btn:hover { border-color: #58a6ff; color: #e6edf3; }
+  .filter-btn.active { background: #21262d; border-color: #58a6ff; color: #e6edf3; }
+
+  .shiny-toggle {
+    background: #161b22;
+    color: #8b949e;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 0.4rem 0.7rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .shiny-toggle.active {
+    background: linear-gradient(135deg, #f0c040, #f09030, #f06090, #60a0f0, #30d090);
+    color: #0d1117;
+    border-color: transparent;
+    font-weight: 600;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.5rem;
+    max-width: 1300px;
+    margin: 0 auto;
+  }
+  .card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 1.2rem;
+    text-align: center;
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(129, 140, 248, 0.15);
+  }
+
+  .rarity-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge-common { background: #21262d; color: #8b949e; }
+  .badge-uncommon { background: #0d2818; color: #3fb950; }
+  .badge-rare { background: #0d1d30; color: #58a6ff; }
+  .badge-epic { background: #1a0d30; color: #bc8cff; }
+  .badge-legendary { background: #2a1d08; color: #f0c040; }
+
+  .name {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 0.15rem;
+    color: #c9d1d9;
+  }
+  .lore-name {
+    font-size: 0.85rem;
+    font-style: italic;
+    margin-bottom: 0.7rem;
+  }
+  .lore-common { color: #8b949e; }
+  .lore-uncommon { color: #3fb950; }
+  .lore-rare { color: #58a6ff; }
+  .lore-epic { color: #bc8cff; }
+  .lore-legendary { color: #f0c040; }
+
+  .sprite-box {
+    background: #0d1117;
+    border-radius: 8px;
+    padding: 0.9rem 0.5rem;
+    margin-bottom: 0.7rem;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .sprite-box pre {
+    font-family: 'Cascadia Code', 'Fira Code', monospace;
+    font-size: 15px;
+    line-height: 1.3;
+    color: #f0f6fc;
+    white-space: pre;
+  }
+  .shiny-mode .sprite-box pre {
+    animation: shinyText 2s ease-in-out infinite;
+  }
+  @keyframes shinyText {
+    0%, 100% { color: #f0f6fc; }
+    25% { color: #f0c040; }
+    50% { color: #60a0f0; }
+    75% { color: #f06090; }
+  }
+
+  .frame-dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 0.6rem;
+  }
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #30363d;
+    transition: background 0.2s;
+  }
+  .dot.active { background: #818cf8; }
+
+  .face-line {
+    font-size: 0.85rem;
+    color: #8b949e;
+    margin-bottom: 0.6rem;
+  }
+  .chance-line {
+    font-size: 0.75rem;
+    color: #484f58;
+  }
+
+  .stats {
+    margin-top: 0.6rem;
+    display: none;
+    text-align: left;
+  }
+  .stats.visible { display: block; }
+  .stat-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 4px;
+    font-size: 0.72rem;
+  }
+  .stat-label {
+    width: 68px;
+    text-align: right;
+    font-family: monospace;
+  }
+  .stat-bar-bg {
+    flex: 1;
+    height: 6px;
+    background: #21262d;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .stat-bar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+
+  .stats-toggle-row {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+  }
+</style>
+</head>
+<body>
+
+<h1>Jungian Archetype Sprites</h1>
+<p class="subtitle">12 Animated Jungian Brand Archetypes — with rarity tiers</p>
+
+<div class="rarity-legend">
+  <div class="rarity-item"><span class="rarity-pip rarity-common"></span> Common 60%</div>
+  <div class="rarity-item"><span class="rarity-pip rarity-uncommon"></span> Uncommon 25%</div>
+  <div class="rarity-item"><span class="rarity-pip rarity-rare"></span> Rare 10%</div>
+  <div class="rarity-item"><span class="rarity-pip rarity-epic"></span> Epic 4%</div>
+  <div class="rarity-item"><span class="rarity-pip rarity-legendary"></span> Legendary 1%</div>
+</div>
+
+<div class="controls">
+  <div>
+    <label>Eye: </label>
+    <select id="eyeSelect">
+      <option value="o">o (default)</option>
+      <option value="O">O (big)</option>
+      <option value="^">^ (happy)</option>
+      <option value=".">. (sleepy)</option>
+      <option value="*">* (sparkle)</option>
+      <option value="x">x (dizzy)</option>
+      <option value="-">- (closed)</option>
+    </select>
+  </div>
+  <div>
+    <label>Hat: </label>
+    <select id="hatSelect">
+      <option value="none">none</option>
+      <option value="crown">crown</option>
+      <option value="tophat">top hat</option>
+      <option value="halo">halo</option>
+      <option value="wizard">wizard</option>
+      <option value="beanie">beanie</option>
+    </select>
+  </div>
+  <div class="speed-control">
+    <label>Speed: </label>
+    <input type="range" id="speedSlider" min="200" max="1500" value="700" step="100">
+    <span id="speedLabel" style="color:#8b949e;font-size:0.85rem;">700ms</span>
+  </div>
+  <button class="shiny-toggle" id="shinyToggle" onclick="toggleShiny()">Shiny (1%)</button>
+</div>
+
+<div class="filter-controls" id="filterControls">
+  <button class="filter-btn active" data-filter="all">All (12)</button>
+  <button class="filter-btn" data-filter="common">Common (3)</button>
+  <button class="filter-btn" data-filter="uncommon">Uncommon (3)</button>
+  <button class="filter-btn" data-filter="rare">Rare (3)</button>
+  <button class="filter-btn" data-filter="epic">Epic (2)</button>
+  <button class="filter-btn" data-filter="legendary">Legendary (1)</button>
+</div>
+
+<div class="stats-toggle-row">
+  <button class="filter-btn" id="statsToggle" onclick="toggleStats()">Show Stats</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<script>
+// ==================== 12 JUNGIAN ARCHETYPES — HARD CODED ====================
+const BODIES = {
+  innocent:   [['   🌼   ', '  ( ^‿^ ) ', '   /|\\   ', '   / \\   '], ['   🌼   ', '  ( ^‿^ ) ', '   /|\\   ', '   / \\~  '], ['   🌼   ', '  ( ˘‿˘ ) ', '   /|\\   ', '   / \\   ']],
+  explorer:   [['   🧭   ', '  ( •_• ) ', '  /|  \\  ', '  / \\→  '], ['   🧭   ', '  ( •_• ) ', '  /|  \\  ', '  / \\↗  '], ['   🧭   ', '  ( o_o ) ', '  /|  \\  ', '  / \\   ']],
+  sage:       [['   📜   ', '  ( -_-)  ', '   /|\\   ', '   / \\   '], ['   📜   ', '  ( -_-)  ', '   /|\\   ', '   / \\   '], ['   📜   ', '  ( -.- ) ', '   /|\\   ', '   / \\   ']],
+  hero:       [['   ⚔️   ', '  ( •_• ) ', '  /|█|\\  ', '   / \\   '], ['   ⚔️   ', '  ( •_• ) ', '  /|█|\\  ', '   / \\~  '], ['   ⚔️   ', '  ( >_< ) ', '  /|█|\\  ', '   / \\   ']],
+  outlaw:     [['   🔥   ', '  ( ¬_¬ ) ', '   \\|/   ', '   / \\   '], ['   🔥   ', '  ( ¬‿¬ ) ', '   \\|/   ', '   / \\~  '], ['   🔥   ', '  ( •_• ) ', '   \\|/   ', '   / \\   ']],
+  magician:   [['   ✨   ', '  ( ⟡_⟡ ) ', '   /|\\   ', '  /___\\  '], ['   ✨   ', '  ( ⟡_⟡ ) ', '   /|\\   ', '  /___\\~ '], ['   ✨   ', '  ( •_• ) ', '   /|\\   ', '  /___\\  ']],
+  lover:      [['   ❤️   ', '  ( ♥‿♥ ) ', '   /|\\   ', '   / \\   '], ['   ❤️   ', '  ( ♥‿♥ ) ', '   /|\\   ', '   / \\~  '], ['   ❤️   ', '  ( ˘‿˘ ) ', '   /|\\   ', '   / \\   ']],
+  caregiver:  [['   🫂   ', '  ( ^‿^ ) ', '  /| |\\  ', '   / \\   '], ['   🫂   ', '  ( ^‿^ ) ', '  /| |\\  ', '   / \\~  '], ['   🫂   ', '  ( -_- ) ', '  /| |\\  ', '   / \\   ']],
+  jester:     [['   🎭   ', '  ( ^o^ ) ', '   \\|/   ', '   / \\   '], ['   🎭   ', '  ( ^o^ ) ', '   \\|/   ', '   / \\~  '], ['   🎭   ', '  ( o_O ) ', '   \\|/   ', '   / \\   ']],
+  everyman:   [['   👥   ', '  ( •_• ) ', '   /|\\   ', '   / \\   '], ['   👥   ', '  ( •_• ) ', '   /|\\   ', '   / \\~  '], ['   👥   ', '  ( -_- ) ', '   /|\\   ', '   / \\   ']],
+  ruler:      [['   👑   ', '  ( •_• ) ', '   /|\\   ', '  /___\\  '], ['   👑   ', '  ( •_• ) ', '   /|\\   ', '  /___\\~ '], ['   👑   ', '  ( ¬_¬ ) ', '   /|\\   ', '  /___\\  ']],
+  creator:    [['   🎨   ', '  ( ⟡‿⟡ ) ', '   /|\\   ', '  /___\\  '], ['   🎨   ', '  ( ⟡‿⟡ ) ', '   /|\\   ', '  /___\\~ '], ['   🎨   ', '  ( •_• ) ', '   /|\\   ', '  /___\\  ']],
+};
+
+const HAT_LINES = {
+  none: '', crown: '   👑   ', tophat: '  [___]  ', halo: '   ( )   ',
+  wizard: '   /^\\   ', beanie: '  (___)  '
+};
+
+const FACES = {
+  innocent: e => `(${e}_${e})`, explorer: e => `(${e} ${e})`, sage: e => `(${e}_${e})`,
+  hero: e => `(${e} ${e})`, outlaw: e => `(${e}_${e})`, magician: e => `(${e}*${e})`,
+  lover: e => `(${e}♥${e})`, caregiver: e => `(${e}_${e})`, jester: e => `(${e}^${e})`,
+  everyman: e => `(${e}_${e})`, ruler: e => `(${e}_${e})`, creator: e => `(${e}*${e})`
+};
+
+const RARITY = {
+  innocent:   { tier: 'common',    loreName: 'Pure Light',     chance: '60%' },
+  explorer:   { tier: 'common',    loreName: 'Wanderer',       chance: '60%' },
+  sage:       { tier: 'common',    loreName: 'Truth Seeker',   chance: '60%' },
+  hero:       { tier: 'uncommon',  loreName: 'Champion',       chance: '25%' },
+  outlaw:     { tier: 'uncommon',  loreName: 'Rebel',          chance: '25%' },
+  magician:   { tier: 'uncommon',  loreName: 'Visionary',      chance: '25%' },
+  lover:      { tier: 'rare',      loreName: 'Passionate One', chance: '10%' },
+  caregiver:  { tier: 'rare',      loreName: 'Nurturer',       chance: '10%' },
+  jester:     { tier: 'rare',      loreName: 'Joy Bringer',    chance: '10%' },
+  everyman:   { tier: 'epic',      loreName: 'The Relatable',  chance: '4%' },
+  ruler:      { tier: 'epic',      loreName: 'Sovereign',      chance: '4%' },
+  creator:    { tier: 'legendary', loreName: 'Vision Maker',   chance: '1%' },
+};
+
+const TIER_ORDER = ['common','uncommon','rare','epic','legendary'];
+const speciesList = Object.keys(BODIES).sort((a,b) => TIER_ORDER.indexOf(RARITY[a].tier) - TIER_ORDER.indexOf(RARITY[b].tier));
+
+const STAT_COLORS = {
+  DEBUGGING: '#58a6ff',
+  PATIENCE: '#3fb950',
+  CHAOS: '#f47067',
+  WISDOM: '#bc8cff',
+  SNARK: '#f0c040'
+};
+
+function seedStats(name) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = ((h << 5) - h + name.charCodeAt(i)) | 0;
+  const s = () => { h = (h * 16807 + 1) & 0x7fffffff; return 25 + (h % 76); };
+  return { DEBUGGING: s(), PATIENCE: s(), CHAOS: s(), WISDOM: s(), SNARK: s() };
+}
+
+let currentFrames = {};
+let intervalId = null;
+let speed = 700;
+let isShiny = false;
+let showStats = false;
+let currentFilter = 'all';
+
+function renderSprite(name, frame, eye, hat) {
+  const frames = BODIES[name];
+  let body = frames[frame % frames.length].map(line => line.replaceAll('{E}', eye));
+  if (hat !== 'none') body[0] = HAT_LINES[hat] || body[0];
+  return body;
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function buildGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+
+  speciesList.forEach(name => {
+    currentFrames[name] = 0;
+    const r = RARITY[name];
+    const stats = seedStats(name);
+    const card = document.createElement('div');
+    card.className = `card rarity-border-${r.tier}${isShiny ? ' shiny-mode' : ''}`;
+    card.dataset.tier = r.tier;
+    if (currentFilter !== 'all' && r.tier !== currentFilter) card.style.display = 'none';
+
+    const eye = document.getElementById('eyeSelect').value;
+    const hat = document.getElementById('hatSelect').value;
+    const lines = renderSprite(name, 0, eye, hat);
+
+    let statsHtml = `<div class="stats${showStats ? ' visible' : ''}" id="stats-${name}">`;
+    Object.entries(stats).forEach(([k, v]) => {
+      statsHtml += `<div class="stat-row"><span class="stat-label">${k}</span><div class="stat-bar-bg"><div class="stat-bar" style="width:${v}%;background:${STAT_COLORS[k]}"></div></div></div>`;
+    });
+    statsHtml += '</div>';
+
+    card.innerHTML = `
+      <span class="rarity-badge badge-${r.tier}">${r.tier}</span>
+      <div class="name">${name}</div>
+      <div class="lore-name lore-${r.tier}">"${r.loreName}"</div>
+      <div class="sprite-box"><pre id="sprite-${name}">${escapeHtml(lines.join('\n'))}</pre></div>
+      <div class="frame-dots" id="dots-${name}">${BODIES[name].map((_,i) => `<span class="dot ${i===0?'active':''}"></span>`).join('')}</div>
+      <div class="face-line" id="face-${name}">face: ${escapeHtml(FACES[name](eye))}</div>
+      <div class="chance-line">${r.chance} chance${isShiny ? ' · SHINY 0.01%!' : ''}</div>
+      ${statsHtml}
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function tick() {
+  const eye = document.getElementById('eyeSelect').value;
+  const hat = document.getElementById('hatSelect').value;
+  speciesList.forEach(name => {
+    currentFrames[name] = (currentFrames[name] + 1) % BODIES[name].length;
+    const frame = currentFrames[name];
+    const el = document.getElementById('sprite-' + name);
+    if (el) el.innerHTML = escapeHtml(renderSprite(name, frame, eye, hat).join('\n'));
+
+    const dots = document.getElementById('dots-' + name);
+    if (dots) Array.from(dots.children).forEach((dot, i) => dot.classList.toggle('active', i === frame));
+
+    const faceEl = document.getElementById('face-' + name);
+    if (faceEl) faceEl.textContent = 'face: ' + FACES[name](eye);
+  });
+}
+
+function startAnimation() {
+  if (intervalId) clearInterval(intervalId);
+  intervalId = setInterval(tick, speed);
+}
+
+window.toggleShiny = function() {
+  isShiny = !isShiny;
+  document.getElementById('shinyToggle').classList.toggle('active', isShiny);
+  buildGrid();
+};
+
+window.toggleStats = function() {
+  showStats = !showStats;
+  document.getElementById('statsToggle').classList.toggle('active', showStats);
+  document.querySelectorAll('.stats').forEach(el => el.classList.toggle('visible', showStats));
+};
+
+// Filter functionality
+document.getElementById('filterControls').addEventListener('click', (e) => {
+  if (!e.target.classList.contains('filter-btn')) return;
+  currentFilter = e.target.dataset.filter;
+  document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.toggle('active', b.dataset.filter === currentFilter));
+  document.querySelectorAll('.card').forEach(card => {
+    card.style.display = (currentFilter === 'all' || card.dataset.tier === currentFilter) ? '' : 'none';
+  });
+});
+
+document.getElementById('eyeSelect').addEventListener('change', buildGrid);
+document.getElementById('hatSelect').addEventListener('change', buildGrid);
+document.getElementById('speedSlider').addEventListener('input', (e) => {
+  speed = parseInt(e.target.value);
+  document.getElementById('speedLabel').textContent = speed + 'ms';
+  startAnimation();
+});
+
+// Initialize
+buildGrid();
+startAnimation();
+</script>
+</body>
+</html>

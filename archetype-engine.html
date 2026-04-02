@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Archetype Identity Engine</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0d1117;
+    color: #e6edf3;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    padding: 2rem;
+    line-height: 1.5;
+  }
+  h1 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 0.3rem;
+    background: linear-gradient(135deg, #c084fc, #818cf8, #60a5fa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle {
+    text-align: center;
+    color: #8b949e;
+    margin-bottom: 2rem;
+    font-size: 1rem;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .pipeline {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .step {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 1rem;
+    width: 180px;
+    text-align: center;
+    transition: all 0.3s;
+  }
+  .step:hover { border-color: #58a6ff; transform: translateY(-4px); }
+  .step-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: #21262d;
+    color: #58a6ff;
+    font-weight: 700;
+    border-radius: 50%;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .controls {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    align-items: end;
+  }
+  .blender {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 1.2rem;
+    width: 420px;
+  }
+  .blender h3 { margin-bottom: 1rem; font-size: 1.1rem; color: #c9d1d9; }
+  .archetype-blend {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .blend-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .blend-row select {
+    background: #21262d;
+    color: #e6edf3;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 0.4rem;
+    flex: 1;
+  }
+  .blend-row input[type="range"] {
+    flex: 2;
+    accent-color: #818cf8;
+  }
+  .blend-row .weight {
+    width: 48px;
+    text-align: right;
+    font-family: monospace;
+    font-size: 0.9rem;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(129, 140, 248, 0.15);
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 1rem;
+  }
+  .card-name {
+    font-weight: 600;
+    font-size: 1.25rem;
+    color: #c9d1d9;
+  }
+  .card-tags {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin: 1rem 0;
+  }
+  .tag {
+    font-size: 0.75rem;
+    padding: 2px 10px;
+    border-radius: 9999px;
+    font-weight: 500;
+  }
+  .drive { background: #0d2818; color: #3fb950; }
+  .fear { background: #2c1a1a; color: #f47067; }
+
+  .tone-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  .tone-label {
+    font-size: 0.75rem;
+    color: #8b949e;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+    font-family: monospace;
+  }
+  .tone-bar-bg {
+    height: 8px;
+    background: #21262d;
+    border-radius: 9999px;
+    overflow: hidden;
+  }
+  .tone-bar {
+    height: 100%;
+    transition: width 0.4s ease;
+  }
+
+  .demo {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 1.5rem;
+    max-width: 800px;
+    margin: 3rem auto 0;
+  }
+  .demo h2 {
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+    color: #c9d1d9;
+  }
+  .input-box {
+    width: 100%;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 1rem;
+    color: #e6edf3;
+    font-family: monospace;
+    resize: vertical;
+    min-height: 80px;
+    margin-bottom: 1rem;
+  }
+  .generate-btn {
+    background: linear-gradient(135deg, #818cf8, #60a5fa);
+    color: #0d1117;
+    border: none;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    width: 100%;
+  }
+  .output {
+    margin-top: 1.5rem;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 1.5rem;
+    font-family: monospace;
+    white-space: pre-wrap;
+    min-height: 180px;
+  }
+
+  .footer {
+    text-align: center;
+    margin-top: 3rem;
+    color: #8b949e;
+    font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+
+<h1>Archetype Identity Engine</h1>
+<p class="subtitle">
+  12 Business Jungian Brand Archetypes • Deterministic behavioral transformation functions<br>
+  <strong>Output = Archetype(Input, Context, Constraints)</strong>
+</p>
+
+<!-- Pipeline -->
+<div class="pipeline">
+  <div class="step"><div class="step-number">1</div><strong>Input Ingestion</strong></div>
+  <div class="step"><div class="step-number">2</div><strong>Archetype Selection</strong><br><small>blend with weights</small></div>
+  <div class="step"><div class="step-number">3</div><strong>Constraint Synthesis</strong></div>
+  <div class="step"><div class="step-number">4</div><strong>Cognitive Framing</strong></div>
+  <div class="step"><div class="step-number">5</div><strong>Generation Layer</strong></div>
+  <div class="step"><div class="step-number">6</div><strong>Post-Processing Validation</strong></div>
+</div>
+
+<div class="controls">
+  <div class="blender">
+    <h3>Archetype Blender (up to 3)</h3>
+    <div class="archetype-blend" id="blender"></div>
+    <button onclick="runDemo()" class="generate-btn" style="margin-top:1.2rem;">Run Pipeline → Generate Response</button>
+  </div>
+
+  <div style="width:280px">
+    <label style="display:block;color:#8b949e;font-size:0.9rem;margin-bottom:0.4rem;">Test Input Query</label>
+    <textarea id="demoInput" class="input-box" rows="3">Explain how our company can build stronger customer loyalty in a competitive market.</textarea>
+  </div>
+</div>
+
+<h2 style="text-align:center;margin:2rem 0 1rem;font-size:1.4rem;color:#c9d1d9;">The 12 Brand Archetypes</h2>
+<div class="grid" id="grid"></div>
+
+<div class="demo">
+  <h2>Live Output Simulator</h2>
+  <div id="output" class="output">Select archetypes and weights, then click “Run Pipeline” to see identity-consistent output.</div>
+</div>
+
+<div class="footer">
+  Archetype Identity Engine — 12 Jungian Brand Archetypes as executable behavioral models<br>
+  Maximize coherence • Preserve identity across interactions
+</div>
+
+<script>
+// ==================== 12 BRAND ARCHETYPES ====================
+const ARCHETYPES = {
+  innocent: {
+    id: "innocent",
+    name: "The Innocent",
+    drives: ["purity", "optimism", "happiness", "simplicity"],
+    fears: ["corruption", "disappointment", "punishment"],
+    tone: { verbosity: 70, assertiveness: 35, warmth: 95, abstraction: 50 },
+    reasoning: { mode: "intuitive", depth: 60, horizon: "immediate" }
+  },
+  explorer: {
+    id: "explorer",
+    name: "The Explorer",
+    drives: ["freedom", "discovery", "adventure", "autonomy"],
+    fears: ["confinement", "boredom", "restriction"],
+    tone: { verbosity: 65, assertiveness: 55, warmth: 70, abstraction: 65 },
+    reasoning: { mode: "intuitive", depth: 75, horizon: "short" }
+  },
+  sage: {
+    id: "sage",
+    name: "The Sage",
+    drives: ["truth", "knowledge", "understanding", "clarity"],
+    fears: ["misinformation", "ignorance", "deception"],
+    tone: { verbosity: 85, assertiveness: 45, warmth: 55, abstraction: 90 },
+    reasoning: { mode: "analytical", depth: 95, horizon: "long" }
+  },
+  hero: {
+    id: "hero",
+    name: "The Hero",
+    drives: ["courage", "mastery", "achievement", "victory"],
+    fears: ["weakness", "failure", "cowardice"],
+    tone: { verbosity: 60, assertiveness: 90, warmth: 50, abstraction: 55 },
+    reasoning: { mode: "strategic", depth: 80, horizon: "short" }
+  },
+  outlaw: {
+    id: "outlaw",
+    name: "The Outlaw",
+    drives: ["liberation", "revolution", "disruption", "authenticity"],
+    fears: ["conformity", "oppression", "inauthenticity"],
+    tone: { verbosity: 55, assertiveness: 85, warmth: 40, abstraction: 60 },
+    reasoning: { mode: "intuitive", depth: 70, horizon: "immediate" }
+  },
+  magician: {
+    id: "magician",
+    name: "The Magician",
+    drives: ["transformation", "power", "catalysis", "vision"],
+    fears: ["stagnation", "ineffectiveness", "predictability"],
+    tone: { verbosity: 70, assertiveness: 75, warmth: 50, abstraction: 85 },
+    reasoning: { mode: "strategic", depth: 85, horizon: "long" }
+  },
+  lover: {
+    id: "lover",
+    name: "The Lover",
+    drives: ["intimacy", "passion", "connection", "sensuality"],
+    fears: ["rejection", "isolation", "unlovability"],
+    tone: { verbosity: 75, assertiveness: 40, warmth: 95, abstraction: 60 },
+    reasoning: { mode: "narrative", depth: 65, horizon: "immediate" }
+  },
+  caregiver: {
+    id: "caregiver",
+    name: "The Caregiver",
+    drives: ["service", "compassion", "protection", "nurturing"],
+    fears: ["selfishness", "neglect", "harm to others"],
+    tone: { verbosity: 65, assertiveness: 40, warmth: 98, abstraction: 45 },
+    reasoning: { mode: "intuitive", depth: 70, horizon: "short" }
+  },
+  jester: {
+    id: "jester",
+    name: "The Jester",
+    drives: ["joy", "humor", "levity", "living in the moment"],
+    fears: ["boredom", "solemnity", "taking life too seriously"],
+    tone: { verbosity: 80, assertiveness: 50, warmth: 90, abstraction: 50 },
+    reasoning: { mode: "intuitive", depth: 55, horizon: "immediate" }
+  },
+  everyman: {
+    id: "everyman",
+    name: "The Everyman",
+    drives: ["belonging", "realness", "equality", "connection"],
+    fears: ["exclusion", "pretentiousness", "standing out negatively"],
+    tone: { verbosity: 60, assertiveness: 45, warmth: 85, abstraction: 40 },
+    reasoning: { mode: "intuitive", depth: 60, horizon: "immediate" }
+  },
+  ruler: {
+    id: "ruler",
+    name: "The Ruler",
+    drives: ["control", "leadership", "order", "excellence"],
+    fears: ["chaos", "loss of control", "weakness"],
+    tone: { verbosity: 55, assertiveness: 95, warmth: 40, abstraction: 65 },
+    reasoning: { mode: "strategic", depth: 80, horizon: "long" }
+  },
+  creator: {
+    id: "creator",
+    name: "The Creator",
+    drives: ["innovation", "expression", "imagination", "legacy"],
+    fears: ["mediocrity", "repetition", "creative block"],
+    tone: { verbosity: 75, assertiveness: 60, warmth: 70, abstraction: 85 },
+    reasoning: { mode: "narrative", depth: 80, horizon: "long" }
+  }
+};
+
+// ==================== RENDER ARCHETYPE CARDS ====================
+function renderArchetypes() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+
+  Object.values(ARCHETYPES).forEach(archetype => {
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    const drivesHTML = archetype.drives.map(d => `<span class="tag drive">${d}</span>`).join('');
+    const fearsHTML = archetype.fears.map(f => `<span class="tag fear">${f}</span>`).join('');
+
+    card.innerHTML = `
+      <div class="card-header">
+        <div class="card-name">${archetype.name}</div>
+        <div style="font-size:0.8rem;color:#8b949e;font-family:monospace;">${archetype.reasoning.mode.toUpperCase()}</div>
+      </div>
+
+      <div class="card-tags">${drivesHTML}${fearsHTML}</div>
+
+      <div style="margin-top:1rem;">
+        <div class="tone-label">VERBOSITY <span>${archetype.tone.verbosity}%</span></div>
+        <div class="tone-bar-bg"><div class="tone-bar" style="width:${archetype.tone.verbosity}%;background:#58a6ff"></div></div>
+      </div>
+      <div style="margin-top:0.8rem;">
+        <div class="tone-label">ASSERTIVENESS <span>${archetype.tone.assertiveness}%</span></div>
+        <div class="tone-bar-bg"><div class="tone-bar" style="width:${archetype.tone.assertiveness}%;background:#f47067"></div></div>
+      </div>
+      <div style="margin-top:0.8rem;">
+        <div class="tone-label">WARMTH <span>${archetype.tone.warmth}%</span></div>
+        <div class="tone-bar-bg"><div class="tone-bar" style="width:${archetype.tone.warmth}%;background:#3fb950"></div></div>
+      </div>
+      <div style="margin-top:0.8rem;">
+        <div class="tone-label">ABSTRACTION <span>${archetype.tone.abstraction}%</span></div>
+        <div class="tone-bar-bg"><div class="tone-bar" style="width:${archetype.tone.abstraction}%;background:#bc8cff"></div></div>
+      </div>
+
+      <div style="margin-top:1.5rem;font-size:0.8rem;color:#8b949e;">
+        Reasoning: <strong>${archetype.reasoning.mode}</strong> • Depth ${archetype.reasoning.depth}% • Horizon ${archetype.reasoning.horizon}
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// ==================== BLENDER UI ====================
+function renderBlender() {
+  const container = document.getElementById('blender');
+  let html = '';
+  const keys = Object.keys(ARCHETYPES);
+
+  for (let i = 0; i < 3; i++) {
+    html += `
+      <div class="blend-row">
+        <select id="archetype-${i}">
+          <option value="">— none —</option>
+          ${keys.map(k => `<option value="${k}">${ARCHETYPES[k].name}</option>`).join('')}
+        </select>
+        <input type="range" id="weight-${i}" min="0" max="100" value="${i===0?70:i===1?30:0}" oninput="updateWeightLabel(this)">
+        <span class="weight" id="weight-label-${i}">${i===0?70:i===1?30:0}%</span>
+      </div>`;
+  }
+  container.innerHTML = html;
+}
+
+window.updateWeightLabel = function(slider) {
+  const id = slider.id.replace('weight-', 'weight-label-');
+  document.getElementById(id).textContent = slider.value + '%';
+};
+
+// ==================== LIVE DEMO ====================
+window.runDemo = function() {
+  const input = document.getElementById('demoInput').value.trim() || "Explain how our company can build stronger customer loyalty.";
+  const blend = [];
+
+  for (let i = 0; i < 3; i++) {
+    const select = document.getElementById(`archetype-${i}`);
+    const weight = parseFloat(document.getElementById(`weight-${i}`).value);
+    if (select.value && weight > 0) {
+      blend.push({ archetype: select.value, weight });
+    }
+  }
+
+  if (blend.length === 0) {
+    document.getElementById('output').innerHTML = `<span style="color:#f47067">⚠️ Please select at least one archetype.</span>`;
+    return;
+  }
+
+  const dominant = blend[0];
+  const arch = ARCHETYPES[dominant.archetype];
+
+  let output = `Input: ${input}\n\n`;
+  output += `→ Active archetypes: ${blend.map(b => ARCHETYPES[b.archetype].name + ` (${b.weight}%)`).join(' + ')}\n\n`;
+  output += `→ Framing: ${arch.reasoning.mode.toUpperCase()} mode • Depth ${arch.reasoning.depth}%\n`;
+  output += `→ Constraints: Drive toward ${arch.drives[0]} • Avoid ${arch.fears[0]}\n\n`;
+  output += `→ Generated response (identity preserved):\n\n`;
+
+  // Simple archetype-aware response examples
+  let responseText = "We should focus on building genuine relationships through consistent value delivery.";
+  if (arch.id === "sage") responseText = "True loyalty emerges from radical transparency and sharing deep, actionable knowledge that empowers your customers.";
+  else if (arch.id === "hero") responseText = "We will overcome every obstacle to deliver exceptional experiences that prove our commitment to excellence.";
+  else if (arch.id === "lover") responseText = "Loyalty is born from emotional connection. Make every interaction feel personal, warm, and deeply caring.";
+  else if (arch.id === "caregiver") responseText = "Put your customers first. Anticipate their needs and provide nurturing support at every stage of their journey.";
+  else if (arch.id === "jester") responseText = "Make loyalty fun! Inject joy, humor, and delightful surprises into every customer touchpoint.";
+
+  output += responseText;
+
+  document.getElementById('output').textContent = output;
+};
+
+// ==================== INIT ====================
+renderArchetypes();
+renderBlender();
+
+// Bonus: Cmd/Ctrl + Enter to run demo
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+    e.preventDefault();
+    runDemo();
+  }
+});
+</script>
+</body>
+</html>
