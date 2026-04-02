@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASCII Character Foundry</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0d1117;
+    color: #e6edf3;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    padding: 2rem;
+  }
+  h1 {
+    text-align: center;
+    font-size: 2.1rem;
+    margin-bottom: 0.4rem;
+    background: linear-gradient(135deg, #45fe47, #00ff9d, #39ff14);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle {
+    text-align: center;
+    color: #8b949e;
+    margin-bottom: 2rem;
+    font-size: 1rem;
+  }
+
+  .controls {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .controls label { color: #8b949e; font-size: 0.9rem; }
+  .controls select {
+    background: #161b22;
+    color: #e6edf3;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 0.4rem 0.8rem;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.8rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 1.4rem;
+    text-align: center;
+    transition: border-color 0.2s;
+  }
+  /* .card:hover {
+    border-color: #45fe47;
+  } */
+
+  .name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+    color: #c9d1d9;
+  }
+
+  .sprite-box {
+    background: #0a0a0a;
+    border-radius: 8px;
+    padding: 1.4rem 0.8rem;
+    margin: 1rem 0;
+    min-height: 170px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .sprite-box pre {
+    font-family: 'Cascadia Code', 'Fira Code', monospace;
+    font-size: 16px;
+    line-height: 1.35;
+    color: #f0f6fc;
+    white-space: pre;
+  }
+
+  .copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #21262d;
+    color: #8b949e;
+    border: 1px solid #30363d;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .copy-btn:hover {
+    background: #45fe47;
+    color: #0d1117;
+    border-color: #45fe47;
+  }
+</style>
+</head>
+<body>
+
+<h1>ASCII Character Foundry</h1>
+<p class="subtitle">All base animations — click "Copy" to get the frame code</p>
+
+<div class="controls">
+  <div>
+    <label>Eye Style: </label>
+    <select id="eyeSelect">
+      <option value="•">• (default)</option>
+      <option value="o">o</option>
+      <option value="O">O</option>
+      <option value="^">^</option>
+      <option value="x">x</option>
+      <option value="-">-</option>
+    </select>
+  </div>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<script>
+// ==================== ANIMATIONS ====================
+const ANIMATIONS = {
+  "Idle Neutral": [
+    ['    ◌    ', '  ( •_• )  ', '  <{█}>  ', '   / \\   '],
+    ['    ◌    ', '  ( •_• )  ', '  <{▓}>  ', '   / \\   '],
+    ['    ◌    ', '  ( -_- )  ', '  <{█}>  ', '   / \\   ']
+  ],
+  "Idle Twitch": [
+    ['    ◌    ', '  ( •_• )  ', '  <{█}>  ', '   / \\   '],
+    ['    ◌    ', '  ( •_• )  ', ' < {█} > ', '  /  \\~  '],
+    ['    ◌    ', '  ( •_• )  ', '  <{█}>  ', '  ~\\  /  ']
+  ],
+  "Running": [
+    ['      ◌  ', '   ( •_•) ', '  <{█}>—  ', '   / ↗   '],
+    ['     ◌   ', '  ( •_•)  ', ' —<{█}>   ', '   ↖ \\   ']
+  ],
+  "Hit/Flinch": [
+    ['    ◌    ', '  ( >_< )  ', ' <{█}>   ', '   / \\   '],
+    ['     ◌   ', ' ( ×_× )  ', '  <{█}>  ', '   / \\   '],
+    ['    ◌    ', '  ( •_• )  ', '  <{█}>  ', '   / \\   ']
+  ],
+  "Crouch": [
+    ['         ', '    ◌    ', '  ( •_• )  ', ' <{_█_}> '],
+    ['         ', '    ◌    ', '  ( •_• )  ', ' <{_▓_}> ']
+  ],
+  "Jump": [
+    ['    ↑    ', '    ◌    ', '  ( •o• )  ', '  <{█}>  '],
+    ['    ◌    ', '  ( •o• )  ', '  <{█}>  ', '   | |   '],
+    ['    ◌    ', '  ( •_• )  ', '  <{█}>  ', '  /   \\  ']
+  ],
+  "Death/KO": [
+    ['    ◌    ', '  ( x_x )  ', '  <{█}>  ', '   / \\   '],
+    ['    .    ', '  ( x_x )  ', '   {█}   ', '    / \\  '],
+    ['         ', '   (x_x)   ', '    {█}  ', '     ..  '],
+    ['         ', '           ', '  —(x_x)—  ', '  _______']
+  ],
+  "Level Up": [
+    ['    ◌    ', '  ( •_• )  ', '  <{█}>  ', '   / \\   '],
+    ['   ✨◌✨  ', '  ( ^‿^ )  ', ' ⚡<{█}>⚡ ', '   / \\   '],
+    [' ✨ ✨ ✨ ', '  ( ^‿^ )  ', ' <==█==> ', '   / \\   ']
+  ],
+  "Thinking": [
+    ['    ◌  ? ', '  ( •_• )  ', '  <{█}⎴  ', '   / \\   '],
+    ['    ◌  ??', '  ( -_- )  ', '  <{█}⎴  ', '   / \\   ']
+  ],
+  "Celebration": [
+    ['  \\ ◌ /  ', '  ( ^o^ )  ', '   {█}   ', '   / \\   '],
+    ['  | ◌ |  ', '  ( ^o^ )  ', '  <{█}>  ', '   | |   ']
+  ],
+  "Swim": [
+    ['    ◌    ', ' ~( •_• )~ ', '  <{█}>  ', '~~~~~~~~~'],
+    ['    ◌    ', ' ~( •_• )~ ', '  /{█}\\  ', ' ~ ~ ~ ~ ']
+  ],
+  "Pulling": [
+    ['    ◌    ', '  ( >_< )  ', ' ⎯⎯<{█}>  ', '   \\ \\   '],
+    ['    ◌    ', '  ( >_< )  ', '⎯⎯⎯<{█}>  ', '    \\ \\  ']
+  ],
+  "Anticipation": [
+    ['     ◌   ', '  ( •_• )  ', '  ⎯⎯<{█}>  ', '    / /    '],
+    ['    ◌    ', '  ( >_< )  ', ' ⎯⎯⎯<{█}>  ', '    / /    ']
+  ],
+  "Recovery": [
+    ['         ', '    ◌    ', '  ( -.- )  ', '  <{█}>    '],
+    ['    ◌    ', '  ( •_• )  ', '  <{█}>    ', '   / \\     ']
+  ],
+  "Edge Balance": [
+    ['    ◌    ', '  ( O_O )  ', '  \\<{█}>/  ', '   / ∟     '],
+    ['    ◌    ', '  ( O_O )  ', '  /<{█}>\  ', '     ⅃ \\   ']
+  ],
+  "Wall Slide": [
+    ['    ◌ |  ', '  ( •_•)|  ', '  <{█}—|  ', '   /   |  '],
+    ['    ◌ |  ', '  ( •_•)|  ', '  <{█}⎴|  ', '   /   |  ']
+  ],
+  "Pushing": [
+    ['    ◌    ', '  ( >_< )  ', '  <{█}>⎯⎯ ', '   / /     '],
+    ['    ◌    ', '  ( >_< )  ', ' <{█}>⎯⎯⎯ ', '  / /      ']
+  ],
+  "Climbing": [
+    ['    ◌ ✋ ', '  ( •_• )  ', ' ⎯⎯<{█}>  ', '   / ∟     '],
+    ['    ◌      ', ' ✋( •_• )✋ ', '  <{█}>    ', '   | |     '],
+    [' ✋ ◌      ', '  ( •_• )  ', '  <{█}>⎯⎯  ', '   ∟ \\     ']
+  ],
+  "Stunned": [
+    ['  * ◌    ', '  ( ◦_◦ )  ', '  <{█}>    ', '   / \\     '],
+    ['    ◌ * ', '  ( ◦_◦ )  ', '  <{█}>    ', '   / \\     ']
+  ],
+  "Shivering": [
+    ['   ~◌~   ', '  ~(>_<)~  ', '  ~<{█}>~  ', '   ~/ \\~   '],
+    ['  ~◌~    ', ' ~(>_<)~   ', ' ~<{█}>~   ', '  ~/ \\~    ']
+  ],
+  "Stealth": [
+    ['         ', '     ◌   ', '  (¬_¬ )  ', ' <{█}>⎯⎯↗ '],
+    ['         ', '    ◌    ', '  (¬_¬ )  ', '⎯⎯<{█}>↗  ']
+  ],
+  "Teleport": [
+    ['    .    ', '         ', '         ', '         '],
+    ['    ◌    ', '   ...   ', '         ', '         '],
+    ['    ◌    ', '  ( •_• )  ', '  ..█..  ', '         '],
+    ['    ◌    ', '  ( •_• )  ', '  <{█}>  ', '   / \\   ']
+  ]
+};
+
+let currentFrames = {};
+let intervalId = null;
+
+// Create grid once
+function initializeGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+
+  Object.keys(ANIMATIONS).forEach(name => {
+    currentFrames[name] = 0;
+    const safeName = name.replace(/\s+/g, '');
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="name">${name}</div>
+      <div class="sprite-box">
+        <pre id="pre-${safeName}"></pre>
+        <button class="copy-btn" onclick="copyAnimation('${name}')">Copy</button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  updateFrames();
+}
+
+// Update only text content
+function updateFrames() {
+  const eye = document.getElementById('eyeSelect').value;
+
+  Object.keys(ANIMATIONS).forEach(name => {
+    const frames = ANIMATIONS[name];
+    const frameIndex = currentFrames[name];
+    const safeName = name.replace(/\s+/g, '');
+    const pre = document.getElementById(`pre-${safeName}`);
+
+    if (pre) {
+      const currentFrameLines = frames[frameIndex % frames.length];
+      const lines = currentFrameLines.map(line => line.replace(/•/g, eye));
+      pre.textContent = lines.join('\n');
+    }
+  });
+}
+
+function tick() {
+  Object.keys(ANIMATIONS).forEach(name => {
+    currentFrames[name] = (currentFrames[name] + 1) % ANIMATIONS[name].length;
+  });
+  updateFrames();
+}
+
+function startAnimation() {
+  if (intervalId) clearInterval(intervalId);
+  intervalId = setInterval(tick, 450);   // Fixed speed (feels good)
+}
+
+// Copy animation frames to clipboard
+window.copyAnimation = function(name) {
+  const frames = ANIMATIONS[name];
+  let output = `// ${name}\n`;
+  output += `const ${name.replace(/\s+/g, '')}Frames = [\n`;
+
+  frames.forEach((frame, i) => {
+    output += '  [\n';
+    frame.forEach(line => {
+      output += `    '${line}',\n`;
+    });
+    output += '  ]' + (i < frames.length - 1 ? ',' : '') + '\n';
+  });
+
+  output += '];\n';
+
+  navigator.clipboard.writeText(output).then(() => {
+    const btn = document.querySelector(`button[onclick="copyAnimation('${name}')"]`);
+    const originalText = btn.textContent;
+    btn.textContent = 'Copied!';
+    btn.style.background = '#45fe47';
+    btn.style.color = '#0d1117';
+
+    setTimeout(() => {
+      btn.textContent = originalText;
+      btn.style.background = '';
+      btn.style.color = '';
+    }, 1200);
+  });
+};
+
+// Event listeners
+document.getElementById('eyeSelect').addEventListener('change', updateFrames);
+
+// Initialize
+initializeGrid();
+startAnimation();
+</script>
+</body>
+</html>
